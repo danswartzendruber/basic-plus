@@ -292,3 +292,14 @@ I suspect this is due to divisions which would be truncated.
 All MAT functionality now present and working, other than matrix
 inversion (and DET, since it is set as a side-effect of inversion)
 
+We do not support implicit arrays in the MAT code.  It's impossible
+to tell if in 'mat x = con' whether 'x' is 1 or 2 dimensional, and
+defaulting to either one seems less than useful.
+
+We also do not support redimensioning arrays, due to the added complexity,
+and it seems less than useful.
+
+Fixed the LEFT, RIGHT and MID builtins to not throw an exception if any
+of the indices exceed the string's actual length.  Instead we return the
+entire string.  Compatibility with the DEC code.
+

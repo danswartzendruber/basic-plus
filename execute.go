@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	//	"github.com/goforj/godump"
 	"math"
 	"math/rand"
 	"runtime"
@@ -883,10 +882,9 @@ func evaluateRpnExprInternal(state *procState, lhs bool) any {
 				}
 
 			case LEFT:
-				idx := rpnPopInt16(stackp)
+				nchars := int(rpnPopInt16(stackp))
 				str := rpnPopString(stackp)
-				checkStringIndex(str, idx)
-				rpnPush(stackp, str[0:idx])
+				rpnPush(stackp, basicSubstring(str, 1, nchars))
 
 			case LEN:
 				rpnPush(stackp, int16(len(rpnPopString(stackp))))
@@ -918,12 +916,10 @@ func evaluateRpnExprInternal(state *procState, lhs bool) any {
 				}
 
 			case MID:
-				r := rpnPopInt16(stackp)
-				l := rpnPopInt16(stackp)
+				nchars := int(rpnPopInt16(stackp))
+				start := int(rpnPopInt16(stackp))
 				str := rpnPopString(stackp)
-				checkStringIndex(str, l)
-				checkStringIndex(str, l+r-1)
-				rpnPush(stackp, str[l-1:l+r-1])
+				rpnPush(stackp, basicSubstring(str, start, nchars))
 
 			case MINUS:
 				vl, vr := rpnPopTwoNumbers(stackp)
@@ -1004,10 +1000,9 @@ func evaluateRpnExprInternal(state *procState, lhs bool) any {
 				}
 
 			case RIGHT:
-				idx := rpnPopInt16(stackp)
+				start := int(rpnPopInt16(stackp))
 				str := rpnPopString(stackp)
-				checkStringIndex(str, idx)
-				rpnPush(stackp, str[idx-1:])
+				rpnPush(stackp, basicSubstring(str, start, len(str)-start+1))
 
 			case RND:
 				rpnPush(stackp, rand.Float64())

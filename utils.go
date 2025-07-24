@@ -1150,3 +1150,25 @@ func setRecordFile(of *file) {
 		runtimeError(fmt.Sprintf("setRecordFile failed (%v)", err))
 	}
 }
+
+//
+// Function to return a substring.  We need this to clip the start
+// and/or length to the actual values for that string, rather than
+// throwing an exception - compatibility with DEC implementation
+//
+
+func basicSubstring(str string, start, length int) string {
+
+	slen := len(str)
+
+	if start > slen || start <= 0 || length <= 0 {
+		return ""
+	} else if length+start > slen {
+		length = slen - start + 1
+	}
+
+	sidx := start - 1
+	eidx := length + sidx
+
+	return str[sidx:eidx]
+}
