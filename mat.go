@@ -127,8 +127,11 @@ func matAssign(ops []*tokenNode) {
 	default:
 		unexpectedTokenError(ops1.token)
 
-	case IDN, INV:
+	case IDN:
 		mtype = LOOKUPMATRIXSQUARE
+
+		//	case INV:
+		//		mtype = LOOKUPMATRIXSQUARE
 
 	case TRN:
 		mtype = LOOKUPMATRIX2D
@@ -145,13 +148,13 @@ func matAssign(ops []*tokenNode) {
 	case IDN:
 		initializeMatrix(lhs, IDN)
 
-	case INV:
-		rhs := lookupMatrix(ops1.operands[0], mtype)
-		runtimeCheck(lhs.vType == FVAR && rhs.vType == FVAR,
-			"INV does not support integer matrices")
-		checkMatrixDestination(lhs, rhs)
-		checkMatrixCompatility(lhs, rhs, true)
-		runtimeError("NOT YET IMPLEMENTED!")
+		//	case INV:
+		//		rhs := lookupMatrix(ops1.operands[0], mtype)
+		//		runtimeCheck(lhs.vType == FVAR && rhs.vType == FVAR,
+		//			"INV does not support integer matrices")
+		//		checkMatrixDestination(lhs, rhs)
+		//		checkMatrixCompatility(lhs, rhs, true)
+		//		runtimeError("NOT YET IMPLEMENTED!")
 
 	case TRN:
 		rhs := lookupMatrix(ops1.operands[0], mtype)

@@ -795,8 +795,9 @@ func evaluateRpnExprInternal(state *procState, lhs bool) any {
 
 				rpnPushString(stackp, t.Format("02-Jan-2006"))
 
-			case DET:
-				rpnPush(stackp, r.det)
+				//	case DET:
+				//		runtimeError("NOT YET IMPLEMENTED!")
+				//		rpnPush(stackp, r.det)
 
 			case EQ:
 				vl, vr := rpnPopTwoNumbers(stackp)
