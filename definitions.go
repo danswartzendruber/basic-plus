@@ -288,18 +288,18 @@ type fieldElement struct {
 }
 
 type run struct {
-	curStmt       *stmtNode
-	nextStmt      *stmtNode
-	dataList      []any
-	gosubStack    []*stmtNode
-	forStack      []*forStackNode
-	userDefList   []userDefNode
-	userDefMap    map[string]*stmtNode
-	userDefStack  []userDefStackNode
-	openFiles     map[int]*file
-	fieldMap      map[int]*field
-	fip           *faultInfo
-	det           float64
+	curStmt      *stmtNode
+	nextStmt     *stmtNode
+	dataList     []any
+	gosubStack   []*stmtNode
+	forStack     []*forStackNode
+	userDefList  []userDefNode
+	userDefMap   map[string]*stmtNode
+	userDefStack []userDefStackNode
+	openFiles    map[int]*file
+	fieldMap     map[int]*field
+	fip          *faultInfo
+	//	det           float64
 	dataIndex     int
 	onErrorStmtNo int16
 	level         int16
