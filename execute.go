@@ -1191,8 +1191,6 @@ func evaluateRpnExprInternal(state *procState, lhs bool) any {
 			case UNEG:
 				ret, intRes = rpnPopNumber(stackp)
 				if intRes {
-					tmp16 := ret.(int16)
-					runtimeCheck(tmp16 != math.MinInt16, EINTEGERERROR)
 					rpnPush(stackp, -ret.(int16))
 				} else {
 					rpnPush(stackp, -ret.(float64))

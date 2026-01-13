@@ -2300,11 +2300,8 @@ einteger:
         EINTEGER
         {
             //
-            // Tricky: we are parsing an explicit integer, so we
-            // need to take account of the asymmetry in signed
-            // integers.  We negate the int64 token, and check
-            // the magnitude, but don't actually negate the integer,
-            // as that is done in the later arithmetic rule
+            // Tricky: we are parsing an explicit integer, so we need
+            // to take account of the asymmetry in signed integers
             //
 
             i64 := $<int64Val>1
@@ -2315,7 +2312,7 @@ einteger:
 
             checkInt16(EINTEGERERROR, i64, math.MinInt16, &@1)
 
-            $<tnodeVal>$ = makeTokenNode(INTEGER, int16($<int64Val>1))
+            $<tnodeVal>$ = makeTokenNode(INTEGER, int16(i64))
         }
 
 integer:
