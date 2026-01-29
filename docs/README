@@ -303,3 +303,5 @@ Fixed the LEFT, RIGHT and MID builtins to not throw an exception if any
 of the indices exceed the string's actual length.  Instead we return the
 entire string.  Compatibility with the DEC code.
 
+Added functions sha256 and sha512. Input is a string, as is output.
+

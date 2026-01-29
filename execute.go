@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"crypto/sha512"
 	"fmt"
 	"math"
 	"math/rand"
@@ -1010,6 +1012,16 @@ func evaluateRpnExprInternal(state *procState, lhs bool) any {
 
 			case SGN:
 				rpnPush(stackp, computeSgn(rpnPopFloat(stackp)))
+
+			case SHA256:
+				str := rpnPopString(stackp)
+				str = fmt.Sprintf("%x", sha256.Sum256([]byte(str)))
+				rpnPushString(stackp, str)
+
+			case SHA512:
+				str := rpnPopString(stackp)
+				str = fmt.Sprintf("%x", sha512.Sum512([]byte(str)))
+				rpnPushString(stackp, str)
 
 			case SIN:
 				rpnPush(stackp, math.Sin(rpnPopFloat(stackp)))
@@ -2357,6 +2369,7 @@ func readInputLine(ioch int, prompt string) string {
 			fatalError(err.Error())
 		}
 		input, _ = readLine(g.inputLiner, prompt, false)
+		checkInterrupts()
 	} else {
 		of := getOpenFile(ioch)
 

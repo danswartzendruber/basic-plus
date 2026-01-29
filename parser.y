@@ -131,6 +131,8 @@ var parsingUneg bool
 %token RUNNH
 %token SAVE
 %token SGN
+%token SHA256
+%token SHA512
 %token SIN
 %token SLASH
 %token SLEEP
@@ -2657,6 +2659,16 @@ basic_bif:
         SGN numeric_par_expr
         {
             $<tnodeVal>$ = makeTokenNode(SGN, $<tnodeVal>2)
+        }
+|
+        SHA256 string_par_expr
+        {
+            $<tnodeVal>$ = makeTokenNode(SHA256, $<tnodeVal>2)
+        }
+|
+        SHA512 string_par_expr
+        {
+            $<tnodeVal>$ = makeTokenNode(SHA512, $<tnodeVal>2)
         }
 |
         SIN numeric_par_expr
