@@ -58,7 +58,6 @@ func setupLiner(allowCtrlC bool) *liner.State {
 
 	l := liner.NewLiner()
 
-	l.SetMultiLineMode(allowCtrlC)
 	l.SetCtrlCAborts(allowCtrlC)
 
 	return l
