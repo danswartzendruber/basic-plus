@@ -1741,33 +1741,6 @@ func rpnPopInt16(stackp *rpnStack) int16 {
 }
 
 //
-// This function pops a value from the stack and returns an int64
-// Pop a value off the stack.
-// If it's an int16, convert to int64.
-// If it's a float64, convert to int64.
-// Otherwise throw an error.
-//
-
-func rpnPopInt64(stackp *rpnStack) int64 { // nolint:unused
-
-	var i int64
-
-	val := rpnPopValue(stackp)
-	switch val := val.(type) {
-	default:
-		unexpectedTypeError(val)
-
-	case float64:
-		i = floatToInt64(val)
-
-	case int16:
-		i = int64(val)
-	}
-
-	return i
-}
-
-//
 // This function pops a value from the stack and returns an int
 // Pop a value off the stack.
 // If it's an int16, convert to int.

@@ -711,13 +711,6 @@ func floatToInt(f float64) int {
 	return int(f)
 }
 
-func floatToInt64(f float64) int64 { //nolint:unused
-
-	runtimeCheck(f >= math.MinInt64 && f <= math.MaxInt64, EINTEGERERROR)
-
-	return int64(f)
-}
-
 //
 // Accept 'any' and return int
 //
