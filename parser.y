@@ -771,7 +771,7 @@ statement:
             $<snodeVal>$ = makeStmtNode(FOR, rpn2, rpn4, rpn6, rpn8)
         }
 |
-        FOR simple_nvar EQ rpn_expr while_until
+        FOR simple_nvar EQ expr while_until
         {
             tp2 := $<tnodeVal>2
             tp4 := $<tnodeVal>4
@@ -789,7 +789,7 @@ statement:
             $<snodeVal>$ = makeStmtNode(FOR, rpn2, rpn4, rpn5)
         }
 |
-        FOR simple_nvar EQ rpn_expr STEP rpn_expr while_until
+        FOR simple_nvar EQ expr STEP expr while_until
         {
             tp2 := $<tnodeVal>2
             tp4 := $<tnodeVal>4
