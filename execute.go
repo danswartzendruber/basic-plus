@@ -1165,7 +1165,7 @@ func evaluateRpnExprInternal(state *procState, lhs bool) any {
 					// Login (session) CPU time in 10ms units
 					//
 
-					utime, stime := getCPUInfo(10)
+					utime, stime := getCPUInfo(1e4)
 
 					rpnPush(stackp, float64(utime+stime))
 

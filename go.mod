@@ -4,7 +4,7 @@ go 1.23.9
 
 require (
 	github.com/danswartzendruber/avl v1.1.0
-	github.com/danswartzendruber/liner v1.0.0
+	github.com/danswartzendruber/liner v1.0.1
 	github.com/goforj/godump v1.5.0
 	github.com/tklauser/go-sysconf v0.3.15
 	golang.org/x/term v0.34.0

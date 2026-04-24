@@ -2,6 +2,8 @@ github.com/danswartzendruber/avl v1.1.0 h1:V1ZRP5xKwPCqFxUHZqM0aUQUbcjoQtl3rooCp
 github.com/danswartzendruber/avl v1.1.0/go.mod h1:HLknd2tJrOqfJgeufsp5FP1bwd72/iS4goBcxDYNZAI=
 github.com/danswartzendruber/liner v1.0.0 h1:nkDCjvRFVofb7wGUlQCSnm3l2pyJFLNyaGdDZ0D6SCM=
 github.com/danswartzendruber/liner v1.0.0/go.mod h1:cEYK4nCVQp9xDbXnYecCzaIclhad1/nwDcA2pSmu38A=
+github.com/danswartzendruber/liner v1.0.1 h1:EC6aiuRLhPemvgNnZIX5QURKr53HrLOQ49Ocg+CaQZY=
+github.com/danswartzendruber/liner v1.0.1/go.mod h1:cEYK4nCVQp9xDbXnYecCzaIclhad1/nwDcA2pSmu38A=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/goforj/godump v1.5.0 h1:QALI7uJkpiwAW3Anko+vOFQzLlWvB7YviYCJpE1sFIE=

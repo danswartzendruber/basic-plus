@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/danswartzendruber/liner"
-	"github.com/tklauser/go-sysconf"
 	"golang.org/x/term"
 	"io"
 	"io/fs"
@@ -743,13 +742,13 @@ func anyToInt(a any) int {
 func initClock() {
 
 	s.elapsed = time.Now()
-	s.utime, s.stime = getCPUInfo(1)
+	s.utime, s.stime = getCPUInfo(1e6)
 }
 
 func printCpuUsage() {
 
 	elapsed := time.Since(s.elapsed)
-	utime, stime := getCPUInfo(1)
+	utime, stime := getCPUInfo(1e6)
 
 	fmt.Printf("CPU Usage: elapsed = %s / user = %s / system = %s\n",
 		formatCPUTime(int64(elapsed.Seconds())),
@@ -773,33 +772,29 @@ func formatCPUTime(t int64) string {
 	return fmt.Sprintf("%02d:%02d:%02d", h, m, t)
 }
 
+//
+// Compute user and system CPU time, divided by the passed-in divisor
+// since callers want either seconds or units of 10ms
+//
+
 func getCPUInfo(divisor int64) (int64, int64) {
 
-	clktck, err := sysconf.Sysconf(sysconf.SC_CLK_TCK)
-	if err != nil {
-		panic(err)
-	} else {
-		clktck /= divisor
+	var rusage syscall.Rusage
+
+	if err := syscall.Getrusage(syscall.RUSAGE_THREAD, &rusage); err != nil {
+		msg := fmt.Sprintf("%v", err)
+		crash(msg)
 	}
 
-	contents, err := os.ReadFile("/proc/self/stat")
-	if err != nil {
-		panic(err)
-	}
+	usec := int64(rusage.Utime.Sec)
+	uusec := int64(rusage.Utime.Usec)
+	ssec := int64(rusage.Stime.Sec)
+	susec := int64(rusage.Stime.Usec)
 
-	fields := strings.Fields(string(contents))
+	utime := ((usec * 1e6) + uusec) / divisor
+	stime := ((ssec * 1e6) + susec) / divisor
 
-	utime, err := strconv.ParseInt(fields[13], 10, 64)
-	if err != nil {
-		panic(err)
-	}
-
-	stime, err := strconv.ParseInt(fields[14], 10, 64)
-	if err != nil {
-		panic(err)
-	}
-
-	return utime / clktck, stime / clktck
+	return utime, stime
 }
 
 //
