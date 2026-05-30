@@ -174,7 +174,7 @@ func lookupSymbolRef(token any, subs ...int16) (ret *symtabNode) {
 // optionally enforcing squareness or 2d-ness
 //
 
-func lookupMatrix(token any, mtype int) *symtabNode {
+func lookupArray(token any, mtype int) *symtabNode {
 
 	var sym *symtabNode
 

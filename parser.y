@@ -58,7 +58,7 @@ var parsingUneg bool
 %token DEF
 %token DELETE
 %token DENORM
- //%token DET
+%token DET
 %token DIM
 %token DUMP
 %token EDIT
@@ -86,7 +86,7 @@ var parsingUneg bool
 %token IMP
 %token INPUT
 %token INSTR
- //%token INV
+%token INV
 %token INT
 %token KILL
 %token LEN
@@ -1246,11 +1246,12 @@ mat_funcs:
             $<tnodeVal>$ = makeTokenNode(IDN)
        }
 |
-       //       INV LPAR simple_var RPAR
-       //       {
-       //            $<tnodeVal>$ = makeTokenNode(INV, $<tnodeVal>3)
-       //       }
-       //|
+
+       INV LPAR simple_var RPAR
+       {
+            $<tnodeVal>$ = makeTokenNode(INV, $<tnodeVal>3)
+       }
+|
        TRN LPAR simple_var RPAR
        {
             $<tnodeVal>$ = makeTokenNode(TRN, $<tnodeVal>3)
@@ -2537,11 +2538,11 @@ basic_bif:
             $<tnodeVal>$ = makeTokenNode(DATES, $<tnodeVal>2)
         }
 |
-        //       DET
-        //       {
-        //            $<tnodeVal>$ = makeTokenNode(DET)
-        //       }
-        //|
+        DET
+        {
+            $<tnodeVal>$ = makeTokenNode(DET)
+        }
+|
         ERL
         {
             $<tnodeVal>$ = makeTokenNode(ERL)

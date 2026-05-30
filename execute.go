@@ -797,9 +797,8 @@ func evaluateRpnExprInternal(state *procState, lhs bool) any {
 
 				rpnPushString(stackp, t.Format("02-Jan-2006"))
 
-				//	case DET:
-				//		runtimeError("NOT YET IMPLEMENTED!")
-				//		rpnPush(stackp, r.det)
+			case DET:
+				rpnPush(stackp, r.det)
 
 			case EQ:
 				vl, vr := rpnPopTwoNumbers(stackp)
@@ -2156,7 +2155,9 @@ func executeRead(curStmt *stmtNode) {
 		//
 		// NB: we don't need to sanity check op.token since the call
 		// to lookupSymbolRef we just made will throw a runtime error
-		// if it isn't one of the 3 scalar variable types
+		// if it isn't one of the 3 scalar variable types.
+		// NB: readDataItem returns float64 for either numeric type
+		// (see comment in that function)
 		//
 
 		switch op.token {
@@ -2166,9 +2167,9 @@ func executeRead(curStmt *stmtNode) {
 			storeFloatVar(sym, val)
 
 		case IVAR:
-			val, ok := dataItem.(int16)
+			val, ok := dataItem.(float64)
 			runtimeCheck(ok, EDATATYPEERROR)
-			storeIntVar(sym, val)
+			storeIntVar(sym, floatToInt16(val))
 
 		case SVAR:
 			val, ok := dataItem.(string)

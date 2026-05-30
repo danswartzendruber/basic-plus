@@ -414,6 +414,23 @@ func floatValuesApproxEqual(f1, f2 float64) bool {
 	return basicFormat(f1) == basicFormat(f2)
 }
 
+func floatingError(val float64) bool {
+
+	if math.IsNaN(val) || math.IsInf(val, 0) {
+		return true
+	} else {
+		//
+		// Reject denorm values?
+		//
+		exp := (math.Float64bits(val) & 0x7ff0000000000000) >> 52
+		if val != 0 && exp == 0 && !g.denorm {
+			return true
+		}
+	}
+
+	return false
+}
+
 //
 // This function is called after one of the 5 numeric binary operators
 // (PLUS, MINUS, STAR, SLASH and POW).  It pops the top of the RPN stack,
@@ -425,25 +442,12 @@ func floatValuesApproxEqual(f1, f2 float64) bool {
 
 func checkFloatingStatus(state *procState) {
 
-	fperror := false
 	val := rpnPopFloat(&state.stack)
 
-	if math.IsNaN(val) || math.IsInf(val, 0) {
-		fperror = true
-	} else {
-		//
-		// Reject denorm values?
-		//
-		exp := (math.Float64bits(val) & 0x7ff0000000000000) >> 52
-		if val != 0 && exp == 0 && !g.denorm {
-			fperror = true
-		} else {
-			rpnPush(&state.stack, val)
-		}
-	}
-
-	if fperror {
+	if floatingError(val) {
 		arithFault(EFLOATINGERROR, state, float64(0.0))
+	} else {
+		rpnPush(&state.stack, val)
 	}
 }
 
@@ -2473,6 +2477,12 @@ func clearScreen() {
 	}
 }
 
+//
+// Ugly: BASIC-PLUS requires DATA items as floats for READ
+// even if the variable is integer.  Return a float and let
+// convert if needed, if we see an integer
+//
+
 func readDataItem() any {
 
 	runtimeCheck(r.dataIndex < len(r.dataList), EOUTOFDATA)
@@ -2480,6 +2490,17 @@ func readDataItem() any {
 	dataItem := r.dataList[r.dataIndex]
 
 	r.dataIndex++
+
+	switch dataItem.(type) {
+	case int16:
+		return float64(dataItem.(int16))
+
+	case float64:
+		return dataItem.(float64)
+
+	case string:
+		return dataItem.(string)
+	}
 
 	return dataItem
 }

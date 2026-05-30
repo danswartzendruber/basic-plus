@@ -1,8 +1,13 @@
 package main
 
 //
-// Process MAT INPUT, MAT PRINT and MAT READ
+// Process MAT requests
 //
+
+import (
+	_ "fmt"
+	"github.com/Arceus-7/matrix"
+)
 
 func matOperate(opcode int, ops []*tokenNode) {
 
@@ -33,7 +38,7 @@ func matOperate(opcode int, ops []*tokenNode) {
 
 	runtimeCheck(len(ops) == opsLen, "matOperate botch")
 
-	sym = lookupMatrix(ops[0], LOOKUPMATRIXANY)
+	sym = lookupArray(ops[0], LOOKUPMATRIXANY)
 
 	ndims := len(sym.dims)
 	switch ndims {
@@ -99,13 +104,18 @@ func matOperateInner(opcode int, sym *symtabNode,
 			resetPrint(true)
 		}
 
+		//
+		// Ugly: BASIC-PLUS requires DATA items as floats for READ
+		// even if the variable is integer
+		//
+
 	case READ:
-		val = readDataItem()
+		val := readDataItem()
 
 		if sym.vType == FVAR {
 			storeFloatVar(sym, val.(float64), subs...)
 		} else {
-			storeIntVar(sym, val.(int16), subs...)
+			storeIntVar(sym, floatToInt16(val.(float64)), subs...)
 		}
 	}
 }
@@ -115,6 +125,8 @@ func matOperateInner(opcode int, sym *symtabNode,
 //
 
 func matAssign(ops []*tokenNode) {
+
+	var err error
 
 	mtype := LOOKUPMATRIXANY
 
@@ -130,48 +142,81 @@ func matAssign(ops []*tokenNode) {
 	case IDN:
 		mtype = LOOKUPMATRIXSQUARE
 
-		//	case INV:
-		//		mtype = LOOKUPMATRIXSQUARE
+	case INV:
+		mtype = LOOKUPMATRIXSQUARE
 
-	case TRN:
+	case TRN, STAR:
 		mtype = LOOKUPMATRIX2D
 
-	case FVAR, IVAR, CON, ZER, PLUS, MINUS, STAR:
+	case FVAR, IVAR, CON, ZER, PLUS, MINUS:
 	}
 
-	lhs := lookupMatrix(ops0, mtype)
+	lhs := lookupArray(ops0, mtype)
 
 	switch ops1.token {
 	case CON:
-		initializeMatrix(lhs, CON)
+		initializeArray(lhs, CON)
 
 	case IDN:
-		initializeMatrix(lhs, IDN)
+		initializeArray(lhs, IDN)
 
-		//	case INV:
-		//		rhs := lookupMatrix(ops1.operands[0], mtype)
-		//		runtimeCheck(lhs.vType == FVAR && rhs.vType == FVAR,
-		//			"INV does not support integer matrices")
-		//		checkMatrixDestination(lhs, rhs)
-		//		checkMatrixCompatility(lhs, rhs, true)
-		//		runtimeError("NOT YET IMPLEMENTED!")
+	case INV:
+		rhs := lookupArray(ops1.operands[0], mtype)
+
+		checkArrayDestination(lhs, rhs)
+		checkArrayCompatibility(lhs, rhs, true)
+
+		if rhs.vType == FVAR {
+			var srcMatrix *matrix.Matrix[float64]
+			var dstMatrix *matrix.Matrix[float64]
+			var tmp [][]float64
+
+			tmp = removeFirstRowAndCol[float64](rhs.value.f)
+			srcMatrix, _ = matrix.New[float64](tmp) /// cannot fail
+
+			if dstMatrix, err = srcMatrix.Inverse(); err != nil {
+				runtimeError(EMATRIXERROR)
+			}
+
+			if r.det, err = srcMatrix.Det(); err != nil {
+				runtimeError(EMATRIXERROR) // is this even possible?
+			}
+
+			lhs.value.f = insertFirstRowAndCol[float64](dstMatrix.Data())
+
+		} else {
+			runtimeError("INV does not support integer matrices")
+		}
 
 	case TRN:
-		rhs := lookupMatrix(ops1.operands[0], mtype)
-		checkMatrixDestination(lhs, rhs)
-		checkMatrixCompatility(lhs, rhs, true)
-		transposeMatrix(lhs, rhs)
+		rhs := lookupArray(ops1.operands[0], mtype)
+
+		if rhs.vType == FVAR {
+			var srcMatrix *matrix.Matrix[float64]
+			var dstMatrix *matrix.Matrix[float64]
+			tmp := removeFirstRowAndCol[float64](rhs.value.f)
+			srcMatrix, _ = matrix.New[float64](tmp) // cannot fail
+			dstMatrix = matrix.Transpose(srcMatrix)
+			lhs.value.f = insertFirstRowAndCol[float64](dstMatrix.Data())
+		} else {
+			var srcMatrix *matrix.Matrix[int16]
+			var dstMatrix *matrix.Matrix[int16]
+			tmp := removeFirstRowAndCol[int16](rhs.value.i)
+			srcMatrix, _ = matrix.New[int16](tmp) // cannot fail
+			dstMatrix = matrix.Transpose(srcMatrix)
+			lhs.value.i = insertFirstRowAndCol[int16](dstMatrix.Data())
+		}
 
 	case ZER:
-		initializeMatrix(lhs, ZER)
+		initializeArray(lhs, ZER)
 
 	case PLUS, MINUS:
-		rhs1 := lookupMatrix(ops1.operands[0], mtype)
-		rhs2 := lookupMatrix(ops1.operands[1], mtype)
+		rhs1 := lookupArray(ops1.operands[0], mtype)
+		rhs2 := lookupArray(ops1.operands[1], mtype)
 
-		checkMatrixCompatility(rhs1, rhs2, false)
-		checkMatrixCompatility(lhs, rhs1, false)
-		checkMatrixCompatility(lhs, rhs2, false)
+		checkArrayCompatibility(rhs1, rhs2, false)
+		checkArrayCompatibility(lhs, rhs1, false)
+		checkArrayCompatibility(lhs, rhs2, false)
 
 		switch ops1.token {
 		case PLUS:
@@ -189,9 +234,9 @@ func matAssign(ops []*tokenNode) {
 
 		case NRPN:
 			mult := evaluateNumericExpr(tops)
-			rhs := lookupMatrix(ops1.operands[1], mtype)
+			rhs := lookupArray(ops1.operands[1], mtype)
 
-			checkMatrixCompatility(lhs, rhs, false)
+			checkArrayCompatibility(lhs, rhs, false)
 
 			//
 			// We also need to make sure the scalar multiplier and
@@ -217,24 +262,44 @@ func matAssign(ops []*tokenNode) {
 			scalarMultiplyMatrix(lhs, rhs, mult)
 
 		case FVAR, IVAR:
-			rhs1 := lookupMatrix(ops1.operands[0], mtype)
-			rhs2 := lookupMatrix(ops1.operands[1], mtype)
-			checkMatrixDestination(lhs, rhs1)
-			checkMatrixDestination(lhs, rhs2)
-			checkMatrixCompatility(rhs1, rhs2, true)
-			checkMatrixDims(lhs, rhs1, rhs2)
-			multiplyMatrices(lhs, rhs1, rhs2)
+			rhs1 := lookupArray(ops1.operands[0], mtype)
+			rhs2 := lookupArray(ops1.operands[1], mtype)
+			checkArrayDestination(lhs, rhs1)
+			checkArrayDestination(lhs, rhs2)
+			checkArrayCompatibility(rhs1, rhs2, true)
+			checkArrayDims(lhs, rhs1, rhs2)
+
+			if rhs1.vType == FVAR {
+				var srcMatrix1, srcMatrix2 *matrix.Matrix[float64]
+				var dstMatrix *matrix.Matrix[float64]
+				tmp := removeFirstRowAndCol[float64](rhs1.value.f)
+				srcMatrix1, _ = matrix.New[float64](tmp) // cannot fail
+				tmp = removeFirstRowAndCol[float64](rhs2.value.f)
+				srcMatrix2, _ = matrix.New[float64](tmp)          // ditto
+				dstMatrix, _ = matrix.Mul(srcMatrix1, srcMatrix2) // ditto
+				lhs.value.f = insertFirstRowAndCol[float64](dstMatrix.Data())
+				checkArrayFloatingStatus(lhs.value.f)
+			} else {
+				var srcMatrix1, srcMatrix2 *matrix.Matrix[int16]
+				var dstMatrix *matrix.Matrix[int16]
+				tmp := removeFirstRowAndCol[int16](rhs1.value.i)
+				srcMatrix1, _ = matrix.New[int16](tmp) // cannot fail
+				tmp = removeFirstRowAndCol[int16](rhs2.value.i)
+				srcMatrix2, _ = matrix.New[int16](tmp)            // ditto
+				dstMatrix, _ = matrix.Mul(srcMatrix1, srcMatrix2) // ditto
+				lhs.value.i = insertFirstRowAndCol[int16](dstMatrix.Data())
+			}
 		}
 
 	case FVAR, IVAR:
-		rhs := lookupMatrix(ops1, mtype)
-		checkMatrixDestination(lhs, rhs)
-		checkMatrixCompatility(lhs, rhs, false)
+		rhs := lookupArray(ops1, mtype)
+		checkArrayDestination(lhs, rhs)
+		checkArrayCompatibility(lhs, rhs, false)
 		copyMatrix(lhs, rhs)
 	}
 }
 
-func initializeMatrix(sym *symtabNode, opcode int) {
+func initializeArray(sym *symtabNode, opcode int) {
 
 	var i, j int16
 
@@ -244,7 +309,7 @@ func initializeMatrix(sym *symtabNode, opcode int) {
 		switch ndims {
 		case 1:
 			basicAssert(opcode == CON || opcode == ZER,
-				"initializeMatrix botch")
+				"initializeArray botch")
 
 			switch sym.vType {
 			case FVAR:
@@ -264,7 +329,7 @@ func initializeMatrix(sym *symtabNode, opcode int) {
 
 		case 2:
 			basicAssert(opcode == CON || opcode == IDN || opcode == ZER,
-				"initializeMatrix botch")
+				"initializeArray botch")
 
 			for j = 1; j <= sym.dims[1]; j++ {
 				switch sym.vType {
@@ -283,24 +348,6 @@ func initializeMatrix(sym *symtabNode, opcode int) {
 					sym.value.i[i][j] = int16(val)
 				}
 			}
-		}
-	}
-}
-
-func transposeMatrix(lhs, rhs *symtabNode) {
-
-	var i, j int16
-
-	for i = 1; i <= rhs.dims[0]; i++ {
-		for j = 1; j <= rhs.dims[1]; j++ {
-			switch rhs.vType {
-			case FVAR:
-				lhs.value.f[j][i] = rhs.value.f[i][j]
-
-			case IVAR:
-				lhs.value.i[j][i] = rhs.value.i[i][j]
-			}
-
 		}
 	}
 }
@@ -339,7 +386,6 @@ func addMatrices(lhs, rhs1, rhs2 *symtabNode, sub bool) {
 			case FVAR:
 				lhs.value.f[0][i] = rhs1.value.f[0][i] +
 					fsign*rhs2.value.f[0][i]
-				checkMatrixFloatingStatus(lhs.value.f[0][i])
 
 			case IVAR:
 				lhs.value.i[0][i] = rhs1.value.i[0][i] +
@@ -352,7 +398,6 @@ func addMatrices(lhs, rhs1, rhs2 *symtabNode, sub bool) {
 				case FVAR:
 					lhs.value.f[i][j] = rhs1.value.f[i][j] +
 						fsign*rhs2.value.f[i][j]
-					checkMatrixFloatingStatus(lhs.value.f[i][j])
 
 				case IVAR:
 					lhs.value.i[i][j] = rhs1.value.i[i][j] +
@@ -360,6 +405,10 @@ func addMatrices(lhs, rhs1, rhs2 *symtabNode, sub bool) {
 				}
 			}
 		}
+	}
+
+	if lhs.vType == FVAR {
+		checkArrayFloatingStatus(lhs.value.f)
 	}
 }
 
@@ -385,7 +434,6 @@ func scalarMultiplyMatrix(lhs, rhs *symtabNode, mult any) {
 			switch lhs.vType {
 			case FVAR:
 				lhs.value.f[0][i] = rhs.value.f[0][i] * fmult
-				checkMatrixFloatingStatus(lhs.value.f[0][i])
 
 			case IVAR:
 				lhs.value.i[0][i] = rhs.value.i[0][i] * imult
@@ -396,7 +444,6 @@ func scalarMultiplyMatrix(lhs, rhs *symtabNode, mult any) {
 				switch lhs.vType {
 				case FVAR:
 					lhs.value.f[i][j] = rhs.value.f[i][j] * fmult
-					checkMatrixFloatingStatus(lhs.value.f[i][j])
 
 				case IVAR:
 					lhs.value.i[i][j] = rhs.value.i[i][j] * imult
@@ -404,38 +451,25 @@ func scalarMultiplyMatrix(lhs, rhs *symtabNode, mult any) {
 			}
 		}
 	}
-}
 
-func multiplyMatrices(lhs, rhs1, rhs2 *symtabNode) {
-
-	var dr, dc, i int16
-
-	for dr = 1; dr <= rhs1.dims[0]; dr++ {
-		for dc = 1; dc <= rhs2.dims[1]; dc++ {
-			sum := 0.0
-			for i = 1; i <= rhs1.dims[1]; i++ {
-				sum += rhs1.value.f[dr][i] * rhs2.value.f[i][dc]
-			}
-
-			checkMatrixFloatingStatus(sum)
-			lhs.value.f[dr][dc] = sum
-		}
+	if lhs.vType == FVAR {
+		checkArrayFloatingStatus(lhs.value.f)
 	}
 }
 
-func checkMatrixDestination(dsym, ssym *symtabNode) {
+func checkArrayDestination(dsym, ssym *symtabNode) {
 
 	runtimeCheck(dsym.name != ssym.name,
 		"Matrix cannot be source and destination")
 }
 
-func checkMatrixDims(lhs, rhs1, rhs2 *symtabNode) {
+func checkArrayDims(lhs, rhs1, rhs2 *symtabNode) {
 
 	runtimeCheck(lhs.dims[0] == rhs1.dims[0] &&
 		lhs.dims[1] == rhs2.dims[1], "Incompatible matrix dimensions")
 }
 
-func checkMatrixCompatility(sym1, sym2 *symtabNode, swapDims bool) {
+func checkArrayCompatibility(sym1, sym2 *symtabNode, swapDims bool) {
 
 	runtimeCheck(sym1.vType == sym2.vType, "Incompatible matrix types")
 
@@ -462,9 +496,67 @@ func checkMatrixCompatility(sym1, sym2 *symtabNode, swapDims bool) {
 	}
 }
 
-func checkMatrixFloatingStatus(val float64) {
+//
+// The routines that do matrix arithmetic don't check for floating
+// errorw, so when they finish, we scan the slices looking for errors
+//
 
-	state := createExecutionState(nil)
-	rpnPush(&state.stack, val)
-	checkFloatingStatus(state)
+func checkArrayFloatingStatus(sl [][]float64) {
+
+	if len(sl) == 1 {
+		for i := 1; i < len(sl[0]); i++ {
+			if floatingError(sl[0][i]) {
+				runtimeError(EFLOATINGERROR)
+			}
+		}
+	} else {
+		for i := 1; i < len(sl); i++ {
+			for j := 1; j < len(sl[i]); j++ {
+				if floatingError(sl[i][j]) {
+					runtimeError(EFLOATINGERROR)
+				}
+			}
+		}
+	}
+}
+
+//
+// Ugliness: BASIC-PLUS arrays run from 0 to H, but the matrix package
+// we are leveraging is the usual 0 to N-1.  BASIC-PLUS matrix operations
+// ignore the 0th element.  We cope by copying the source matrix to a new
+// slice of slices omitting the 0th entries.  Gack!
+//
+
+func removeFirstRowAndCol[M float64 | int16](src [][]M) [][]M {
+
+	newLen := len(src) - 1
+	dst := make([][]M, newLen)
+
+	for i := 0; i < newLen; i++ {
+		dst[i] = make([]M, newLen)
+		for j := 0; j < newLen; j++ {
+			dst[i][j] = src[i+1][j+1]
+		}
+	}
+
+	return dst
+}
+
+//
+// Copy a Matrix to a BASIC-PLUS matrix
+//
+
+func insertFirstRowAndCol[M float64 | int16](src [][]M) [][]M {
+
+	newLen := len(src) + 1
+	dst := make([][]M, newLen)
+
+	for i := 0; i < newLen-1; i++ {
+		dst[i+1] = make([]M, newLen)
+		for j := 0; j < newLen-1; j++ {
+			dst[i+1][j+1] = src[i][j]
+		}
+	}
+
+	return dst
 }

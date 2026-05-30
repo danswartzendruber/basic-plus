@@ -288,18 +288,18 @@ type fieldElement struct {
 }
 
 type run struct {
-	curStmt      *stmtNode
-	nextStmt     *stmtNode
-	dataList     []any
-	gosubStack   []*stmtNode
-	forStack     []*forStackNode
-	userDefList  []userDefNode
-	userDefMap   map[string]*stmtNode
-	userDefStack []userDefStackNode
-	openFiles    map[int]*file
-	fieldMap     map[int]*field
-	fip          *faultInfo
-	//	det           float64
+	curStmt       *stmtNode
+	nextStmt      *stmtNode
+	dataList      []any
+	gosubStack    []*stmtNode
+	forStack      []*forStackNode
+	userDefList   []userDefNode
+	userDefMap    map[string]*stmtNode
+	userDefStack  []userDefStackNode
+	openFiles     map[int]*file
+	fieldMap      map[int]*field
+	fip           *faultInfo
+	det           float64
 	dataIndex     int
 	onErrorStmtNo int16
 	level         int16
@@ -407,7 +407,7 @@ var stringOps = []int{CONCAT, CHRS, CVTFS, CVTIS, DATES, FNSVAR,
 	STRING, SVAR, TAB, TIMES}
 
 var numericOps = []int{ABS, AND, APPROX, ASCII, ATN, COS, CVTSF, CVTSI,
-	/*DET,*/ EQ, EQV, ERL, ERR, EXP, FIX, FLOAT, FNFVAR, FNIVAR, FVAR, GE,
+	DET, EQ, EQV, ERL, ERR, EXP, FIX, FLOAT, FNFVAR, FNIVAR, FVAR, GE,
 	GT, IMP, INT, INSTR, INTEGER, IVAR, LE, LEN, LOG, LOG10, LT, MINUS,
 	OR, NCALL, NE, NOT, NRPN, PI, POS, PLUS, POW, RND, SGN, SIN, SLASH,
 	SQR, STAR, STREQ, STRGE, STRGT, STRLE, STRLT, STRNE, SWAPI, TAN,

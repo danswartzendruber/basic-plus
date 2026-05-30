@@ -1,7 +1,7 @@
+github.com/Arceus-7/matrix v1.1.0 h1:5jsUVVYso1BKeS/+HO6gHJ9xRHrRO0sFSTMDsKbItDk=
+github.com/Arceus-7/matrix v1.1.0/go.mod h1:4ml52fgBTdEHYxfkwxHgHN8rOVzFCtNx5udLVDltnzg=
 github.com/danswartzendruber/avl v1.1.0 h1:V1ZRP5xKwPCqFxUHZqM0aUQUbcjoQtl3rooCpU+9J8w=
 github.com/danswartzendruber/avl v1.1.0/go.mod h1:HLknd2tJrOqfJgeufsp5FP1bwd72/iS4goBcxDYNZAI=
-github.com/danswartzendruber/liner v1.0.0 h1:nkDCjvRFVofb7wGUlQCSnm3l2pyJFLNyaGdDZ0D6SCM=
-github.com/danswartzendruber/liner v1.0.0/go.mod h1:cEYK4nCVQp9xDbXnYecCzaIclhad1/nwDcA2pSmu38A=
 github.com/danswartzendruber/liner v1.0.1 h1:EC6aiuRLhPemvgNnZIX5QURKr53HrLOQ49Ocg+CaQZY=
 github.com/danswartzendruber/liner v1.0.1/go.mod h1:cEYK4nCVQp9xDbXnYecCzaIclhad1/nwDcA2pSmu38A=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
@@ -14,10 +14,6 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOfJA=
 github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
-github.com/tklauser/go-sysconf v0.3.15 h1:VE89k0criAymJ/Os65CSn1IXaol+1wrsFHEB8Ol49K4=
-github.com/tklauser/go-sysconf v0.3.15/go.mod h1:Dmjwr6tYFIseJw7a3dRLJfsHAMXZ3nEnL/aZY+0IuI4=
-github.com/tklauser/numcpus v0.10.0 h1:18njr6LDBk1zuna922MgdjQuJFjrdppsZG60sHGfjso=
-github.com/tklauser/numcpus v0.10.0/go.mod h1:BiTKazU708GQTYF4mB+cmlpT2Is1gLk7XVuEeem8LsQ=
 golang.org/x/sys v0.35.0 h1:vz1N37gP5bs89s7He8XuIYXpyY0+QlsKmzipCbUtyxI=
 golang.org/x/sys v0.35.0/go.mod h1:BJP2sWEmIv4KK5OTEluFJCKSidICx8ciO85XgH3Ak8k=
 golang.org/x/term v0.34.0 h1:O/2T7POpk0ZZ7MAzMeWFSg6S5IpWd/RXDlM9hgM3DR4=
